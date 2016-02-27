@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
+// var db = require('./db.js');
+var db = require('./db.js');
 var app = express();
 var PORT = process.env.PORT || 3000;
 
@@ -8,10 +10,6 @@ app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
 	res.send('gaurav')
-});
-
-app.listen(PORT, function() {
-	console.log('app is working on port no 3000');
 });
 
 var todos  = [];
@@ -51,18 +49,21 @@ app.get('/todos/:id', function (req, res) {
 
 //Post only description and  completed property and skipped other garbage properties
 app.post('/todos', function(req, res) {
-	var body = _.pick(req.body, 'description', 'completed'); // pick only description and completed
+	// var body = _.pick(req.body, 'description', 'completed'); // pick only description and completed
+	// db.todo.create(body).then(function (todo) {
+	// 	res.json(todo.toJSON());
+	// }, function (e) {
+	// 	res.status(400).json(e);
+	// });
 
-	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-		res.status(404).send();
-	}
+	var body = _.pick(req.body, 'description', 'completed');
 
-	body.id = todoId++;
-	body.description = body.description.trim();
+	db.todo.create(body).then(function (todo) {
+		res.json(todo.toJSON());
+	}, function (e) {
+		res.status(400).json(e);
+	});
 
-	todos.push(body);
-
-	res.json(body);
 });
 
 // Delete API
@@ -101,4 +102,10 @@ app.put('/todos/:id', function (req, res) {
 
 	_.extend(matchedTodo, validateAttribures);
 	res.json(matchedTodo);
+})
+
+db.sequelize.sync().then(function () {
+	app.listen(PORT, function() {
+		console.log('app is working on port no 3000');
+	});
 })

@@ -33,7 +33,7 @@ sequelize.sync().then(function () {
         }
     })
 
-
+    
     // This is fo insert and find result
 
     // Todo.create({
