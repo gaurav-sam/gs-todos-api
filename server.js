@@ -17,9 +17,17 @@ app.listen(PORT, function() {
 var todos  = [];
 var todoId = 1;
 
-// GET all todos item
+// GET todos :?completed=true
 app.get('/todos', function(req, res) {
-	res.json(todos);
+	var queryParams = req.query;
+	var filteredTodos = todos;
+
+	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+		filteredTodos = _.where(filteredTodos, {completed : true});
+	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+		filteredTodos = _.where(filteredTodos, {completed : false});
+	}
+	res.json(filteredTodos);
 })
 
 // GET Object by id
@@ -49,8 +57,6 @@ app.post('/todos', function(req, res) {
 	todos.push(body);
 
 	res.json(body);
-
-
 });
 
 // Delete API
