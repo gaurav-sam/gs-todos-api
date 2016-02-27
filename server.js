@@ -34,18 +34,21 @@ app.get('/todos/:id', function (req, res) {
 	}
 });
 
+//fetch all todo data
 app.post('/todos', function(req, res) {
-	var body = req.body;
+	var body = _.pick(req.body, 'description', 'completed'); // pick only description and completed
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
 		res.status(404).send();
 	}
 
 	body.id = todoId++;
+	body.description = body.description.trim();
 
 	todos.push(body);
 
-	res.json(body)
+	res.json(body);
+
 
 });
 
