@@ -17,21 +17,40 @@ var todoId = 1;
 
 // GET todos :?completed=true
 app.get('/todos', function(req, res) {
-	var queryParams = req.query;
-	var filteredTodos = todos;
+	var query = req.query;
+	var where = {};
 
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {completed : true});
-	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {completed : false});
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
 	}
 
-	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-		filteredTodos = _.filter(filteredTodos, function (todo) {
-			return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-		});
+	if (query.hasOwnProperty('q') && query.q.length > 0) {
+		where.description = {
+			$like : '%' + query.q + '%'
+		}
 	}
-	res.json(filteredTodos);
+
+	db.todo.findAll({where : where}).then(function (todos) {
+		res.json(todos);
+	}, function (e) {
+		res.status(500).send(e);
+	})
+
+
+	// if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+	// 	filteredTodos = _.where(filteredTodos, {completed : true});
+	// } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+	// 	filteredTodos = _.where(filteredTodos, {completed : false});
+	// }
+	//
+	// if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+	// 	filteredTodos = _.filter(filteredTodos, function (todo) {
+	// 		return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+	// 	});
+	// }
+	// res.json(filteredTodos);
 })
 
 // GET Object by id
@@ -47,16 +66,6 @@ app.get('/todos/:id', function (req, res) {
     }, function (e) {
 		res.status(500).send();
 	});
-
-
-
-	// var matchedTodo = _.findWhere(todos, {id : todoId});
-	//
-	// if (matchedTodo) {
-	// 	res.json(matchedTodo);
-	// } else {
-	// 	res.status(404).send();
-	// }
 });
 
 //Post only description and  completed property and skipped other garbage properties
